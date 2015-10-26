@@ -3,6 +3,8 @@
 /*
 
  Affiliate Link Processor - https://github.com/robogeek/affiliate-link-processor
+ 
+ Copyright (c) David Herron, 2015
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License, version 2, as 
