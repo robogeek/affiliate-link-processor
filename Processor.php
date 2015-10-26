@@ -31,11 +31,57 @@ class Processor {
           || ($urlParts['scheme'] !== 'http' && $urlParts['scheme'] !== 'https')) {
             return $url;
         }
-        if ($this->domainEndsWith($urlParts['host'], 'amazon.com')) return $this->processAmazonCOMURL($url, $urlParts);
+        if ($this->isAmazonDomain($urlParts['host']) return $this->processAmazonURL($url, $urlParts);
         if ($this->isRakutenDomain($urlParts['host'])) return $this->processRakutenURL($url, $urlParts);
         if ($this->domainEndsWith($urlParts['host'], 'zazzle.com')) return $this->processZazzleURL($url, $urlParts);
         
         // Didn't match anything
+        return $url;
+    }
+    
+    /**
+     * $config['AMAZON'] => array(
+     *    'amazon.com' => array(
+     *      'tracking-code' => 'blah-de-blah-20'
+     *    ),
+     *    'amazon.co.uk' => array(
+     *      'tracking-code' => 'blah-de-blah-20'
+     *    ),
+     *    'amazon.de' => array(
+     *      'tracking-code' => 'blah-de-blah-20'
+     *    ),
+     *    ...
+     * )
+     */
+     
+    private function isAmazonDomain($host) {
+        if (!array_key_exists($this->config, 'AMAZON')
+         || empty($this->config['AMAZON'])) {
+            return FALSE;
+        } else {
+            $progs = array_keys($this->config['AMAZON']);
+            foreach ($progs as $prog) {
+                if ($this->domainEndsWith($host, $prog)) return TRUE;
+            }
+            return FALSE;
+        }
+    }
+    
+    private function processAmazonURL($url, $urlParts) {
+        
+        // Use the same check as in isAmazonDomain
+        if (!array_key_exists($this->config, 'AMAZON')
+         || empty($this->config['AMAZON'])) {
+            return FALSE;
+        }
+        
+        foreach ($this->config['AMAZON'] as $prog => $progdata) {
+            if ($this->domainEndsWith($urlParts['host'], $prog)) {
+                $this->processAnyAmazonProperty($urlParts, $progdata['tracking-code']);
+                $newhref = $this->unparse_url($urlParts);
+                return $newhref;
+            }
+        }
         return $url;
     }
     
@@ -50,21 +96,6 @@ class Processor {
             $urlParts['query'] = 'tag='. $trackingCode;
         } else if (strpos($urlParts['query'], '&tag=') === FALSE) {
             $urlParts['query'] = $urlParts['query'] .'&tag='.  $trackingCode;
-        }
-    }
-    
-    /**
-     * $config['amazon.com'] => array(
-     *    'tracking-code' => 'blah-de-blah-20'
-     * )
-     */
-    private function processAmazonCOMURL($url, $urlParts) {
-        if (array_key_exists($this->config, 'amazon.com') && !empty($this->config['amazon.com'])) {
-            $this->processAnyAmazonProperty($urlParts, $this->config['amazon.com']['tracking-code']);
-            $newhref = $this->unparse_url($urlParts);
-            return $newhref;
-        } else {
-            return $url;
         }
     }
     
