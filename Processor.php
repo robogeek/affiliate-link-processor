@@ -20,7 +20,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-namespace AffiliateLinkProcessor;
+// namespace AffiliateLinkProcessor;
 
 /**
  *
@@ -32,7 +32,7 @@ namespace AffiliateLinkProcessor;
 class Processor {
     private $config;
     public function __construct($__config) {
-        $config = $__config;
+        $this->config = $__config;
     }
     
     /**
@@ -51,7 +51,7 @@ class Processor {
           || ($urlParts['scheme'] !== 'http' && $urlParts['scheme'] !== 'https')) {
             return $url;
         }
-        if ($this->isAmazonDomain($urlParts['host']) return $this->processAmazonURL($url, $urlParts);
+        if ($this->isAmazonDomain($urlParts['host'])) return $this->processAmazonURL($url, $urlParts);
         if ($this->isRakutenDomain($urlParts['host'])) return $this->processRakutenURL($url, $urlParts);
         if ($this->domainEndsWith($urlParts['host'], 'zazzle.com')) return $this->processZazzleURL($url, $urlParts);
         
@@ -75,8 +75,8 @@ class Processor {
      */
      
     private function isAmazonDomain($host) {
-        if (!array_key_exists($this->config, 'AMAZON')
-         || empty($this->config['AMAZON'])) {
+        if (/*!array_key_exists($this->config, 'AMAZON')
+         || */empty($this->config['AMAZON'])) {
             return FALSE;
         } else {
             $progs = array_keys($this->config['AMAZON']);
@@ -90,15 +90,16 @@ class Processor {
     private function processAmazonURL($url, $urlParts) {
         
         // Use the same check as in isAmazonDomain
-        if (!array_key_exists($this->config, 'AMAZON')
-         || empty($this->config['AMAZON'])) {
-            return FALSE;
+        if (/*!array_key_exists($this->config, 'AMAZON')
+         || */empty($this->config['AMAZON'])) {
+            return $url;
         }
         
         foreach ($this->config['AMAZON'] as $prog => $progdata) {
             if ($this->domainEndsWith($urlParts['host'], $prog)) {
                 $this->processAnyAmazonProperty($urlParts, $progdata['tracking-code']);
                 $newhref = $this->unparse_url($urlParts);
+                
                 return $newhref;
             }
         }
@@ -135,8 +136,8 @@ class Processor {
      */
      
     private function isRakutenDomain($host) {
-        if (!array_key_exists($this->config, 'RAKUTEN')
-         || empty($this->config['RAKUTEN'])) {
+        if (/*!array_key_exists($this->config, 'RAKUTEN')
+         || */ empty($this->config['RAKUTEN'])) {
             return FALSE;
         } else {
             $progs = array_keys($this->config['RAKUTEN']['programs']);
@@ -149,8 +150,8 @@ class Processor {
     
     private function processRakutenURL($url, $urlParts) {
         // Use the same check as in isRakutenDomain
-        if (!array_key_exists($this->config, 'RAKUTEN')
-         || empty($this->config['RAKUTEN'])) {
+        if (/* !array_key_exists($this->config, 'RAKUTEN')
+         || */ empty($this->config['RAKUTEN'])) {
             return $url;
         }
         
@@ -159,14 +160,14 @@ class Processor {
                 $mid = $progdata['mid'];
                 $affID = $this->config['RAKUTEN']['affiliate-code'];
                 $urlenc = urlencode($url);
-                if ($this->domainEndsWith($urlParts['host'], "rakuten.com")) {
+                /* if ($this->domainEndsWith($urlParts['host'], "rakuten.com")) {
                     $afflinkbase = "http://affiliate.rakuten.com/";
-                } else if ($this->domainEndsWith($urlParts['host'], "walmart.com")) {
+                } else */ if ($this->domainEndsWith($urlParts['host'], "walmart.com")) {
                     $afflinkbase = "http://linksynergy.walmart.com/";
                 } else {
                     $afflinkbase = "http://click.linksynergy.com/";
                 }
-                return "{$$afflinkbase}/deeplink?id={$affID}&mid={$mid}&murl={$urlenc}";
+                return "{$afflinkbase}deeplink?id={$affID}&mid={$mid}&murl={$urlenc}";
             }
         }
         return $url;
@@ -178,7 +179,7 @@ class Processor {
      * )
      */
     private function processZazzleURL($url, $urlParts) {
-        if (array_key_exists($this->config, 'zazzle.com') && !empty($this->config['zazzle.com'])) {
+        if (/* array_key_exists($this->config, 'zazzle.com') && */ !empty($this->config['zazzle.com'])) {
             if (empty($urlParts['query'])) {
                 $urlParts['query'] = 'rf='. $this->config['zazzle.com']['affiliateID'];
             } else {
